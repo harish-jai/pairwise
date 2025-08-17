@@ -9,23 +9,23 @@ import json
 
 app = FastAPI()
 
-raw = os.getenv("_ALLOWED_ORIGINS") or os.getenv("ALLOWED_ORIGINS") or ""
-try:
-    parsed = json.loads(raw) if raw.strip().startswith("[") else None
-except json.JSONDecodeError:
-    parsed = None
+import os, json
+from fastapi.middleware.cors import CORSMiddleware
 
-origins = (
-    [s.strip() for s in raw.split(",") if s.strip()]
-    if not parsed else
-    [str(s).strip() for s in parsed]
-)
-if not origins:
-    origins = ["http://localhost:3000"]  # sensible default for local dev
+raw = os.getenv("_ALLOWED_ORIGINS") or os.getenv("ALLOWED_ORIGINS") or ""
+def parse(origins):
+    if origins.strip().startswith("["):
+        try: return [str(x).strip() for x in json.loads(origins)]
+        except: pass
+    return [o.strip() for o in origins.split(",") if o.strip()]
+
+origins = parse(raw)
+origin_regex = os.getenv("_ALLOWED_ORIGIN_REGEX") or os.getenv("ALLOWED_ORIGIN_REGEX")
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=origins,
+    allow_origins=origins,               # exact domains
+    allow_origin_regex=origin_regex,     # e.g. r"https://.*\.vercel\.app$"
     allow_methods=["*"],
     allow_headers=["*"],
 )
