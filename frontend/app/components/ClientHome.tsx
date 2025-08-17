@@ -7,13 +7,44 @@ import { Button, Typography, Stack, Paper, FormControl, InputLabel, Select, Menu
 type Mentor = { id: string; name?: string; major: string; extracurriculars: string[]; capacity: number; };
 type Mentee = { id: string; name?: string; target_major: string; extracurriculars: string[]; };
 
+type CsvRow = {
+    id?: string;
+    mentor_id?: string;
+    mentee_id?: string;
+    name?: string;
+    major?: string;
+    target_major?: string;
+    extracurriculars?: string;
+    capacity?: string | number;
+};
+
+type PriorityMode = "lexicographic" | "weighted";
+type ExtrasMetric = "count" | "jaccard" | "cosine";
+
+type Assignment = {
+    mentee: string;
+    mentee_name?: string;
+    mentor: string;
+    mentor_name?: string;
+    major_match: boolean;
+    extras_score: number;
+};
+
+type Results = {
+    objective: {
+        major_matches: number;
+        extras_total: number;
+    };
+    assignments: Assignment[];
+};
+
 export default function ClientHome() {
     const [mentors, setMentors] = useState<Mentor[]>([]);
     const [mentees, setMentees] = useState<Mentee[]>([]);
-    const [priorityMode, setPriorityMode] = useState<"lexicographic" | "weighted">("weighted");
+    const [priorityMode, setPriorityMode] = useState<PriorityMode>("weighted");
     const [bigM, setBigM] = useState<number>(1000);
-    const [extrasMetric, setExtrasMetric] = useState<"count" | "jaccard" | "cosine">("count");
-    const [results, setResults] = useState<any>(null);
+    const [extrasMetric, setExtrasMetric] = useState<ExtrasMetric>("count");
+    const [results, setResults] = useState<Results | null>(null);
     const [backendUrl, setBackendUrl] = useState<string>(process.env.NEXT_PUBLIC_BACKEND_URL || "http://localhost:8000");
 
     const parseCsv = (file: File, isMentor: boolean) => {
@@ -21,20 +52,20 @@ export default function ClientHome() {
             header: true,
             skipEmptyLines: true,
             complete: (res) => {
-                const rows = res.data as any[];
+                const rows = res.data as CsvRow[];
                 if (isMentor) {
                     setMentors(rows.map(r => ({
-                        id: r.id || r.mentor_id,
+                        id: r.id || r.mentor_id || "",
                         name: r.name,
-                        major: r.major,
+                        major: r.major || "",
                         extracurriculars: (r.extracurriculars || "").split(/[;,]/).map((s: string) => s.trim()).filter(Boolean),
                         capacity: Number(r.capacity ?? 1)
                     })));
                 } else {
                     setMentees(rows.map(r => ({
-                        id: r.id || r.mentee_id,
+                        id: r.id || r.mentee_id || "",
                         name: r.name,
-                        target_major: r.target_major || r.major,
+                        target_major: r.target_major || r.major || "",
                         extracurriculars: (r.extracurriculars || "").split(/[;,]/).map((s: string) => s.trim()).filter(Boolean)
                     })));
                 }
@@ -62,7 +93,7 @@ export default function ClientHome() {
             mentees,
             scoring: { priority_mode: priorityMode, bigM, extras_metric: extrasMetric, major_rule: "exact" }
         };
-        const { data } = await axios.post(`${backendUrl}/solve`, payload);
+        const { data } = await axios.post<Results>(`${backendUrl}/solve`, payload);
         setResults(data);
     };
 
@@ -90,7 +121,7 @@ export default function ClientHome() {
                 <Stack direction="row" spacing={2} alignItems="center" sx={{ mt: 1 }}>
                     <FormControl size="small">
                         <InputLabel>Mode</InputLabel>
-                        <Select value={priorityMode} label="Mode" onChange={(e) => setPriorityMode(e.target.value as any)}>
+                        <Select value={priorityMode} label="Mode" onChange={(e) => setPriorityMode(e.target.value as PriorityMode)}>
                             <MenuItem value="weighted">Weighted</MenuItem>
                             <MenuItem value="lexicographic">Lexicographic</MenuItem>
                         </Select>
@@ -98,7 +129,7 @@ export default function ClientHome() {
                     <TextField size="small" type="number" label="bigM" value={bigM} onChange={e => setBigM(parseInt(e.target.value || "1000"))} disabled={priorityMode !== "weighted"} />
                     <FormControl size="small">
                         <InputLabel>Extras</InputLabel>
-                        <Select value={extrasMetric} label="Extras" onChange={(e) => setExtrasMetric(e.target.value as any)}>
+                        <Select value={extrasMetric} label="Extras" onChange={(e) => setExtrasMetric(e.target.value as ExtrasMetric)}>
                             <MenuItem value="count">Count</MenuItem>
                             <MenuItem value="jaccard">Jaccard</MenuItem>
                             <MenuItem value="cosine">Cosine</MenuItem>
@@ -120,7 +151,7 @@ export default function ClientHome() {
                         Major matches: <b>{results.objective.major_matches}</b> • Extras total: <b>{results.objective.extras_total.toFixed(2)}</b>
                     </Typography>
                     <div style={{ marginTop: 12 }}>
-                        {results.assignments.map((a: any, idx: number) => (
+                        {results.assignments.map((a: Assignment, idx: number) => (
                             <Paper key={idx} sx={{ p: 1, mb: 1 }}>
                                 <Typography variant="body2">
                                     <b>{a.mentee_name || a.mentee}</b> → <b>{a.mentor_name || a.mentor}</b>
