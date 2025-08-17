@@ -1,0 +1,57 @@
+
+# --- OS cruft ---
+.DS_Store
+Thumbs.db
+
+# --- Env files (keep examples) ---
+**/.env
+**/.env.*
+!**/.env.example
+!**/.env.sample
+
+# --- Editors / IDEs ---
+.vscode/
+!.vscode/extensions.json
+!.vscode/settings.json
+.idea/
+*.iml
+
+# --- Node / Next.js (monorepo-friendly) ---
+**/node_modules/
+**/.next/
+**/out/
+**/dist/
+**/.turbo/
+**/.vercel/
+**/.eslintcache
+**/coverage/
+**/npm-debug.log*
+**/yarn-debug.log*
+**/yarn-error.log*
+**/pnpm-debug.log*
+
+# --- Python / FastAPI (monorepo-friendly) ---
+.venv/
+venv/
+env/
+**/.venv/
+**/venv/
+**/env/
+**/__pycache__/
+**/*.py[cod]
+**/.pytest_cache/
+**/.mypy_cache/
+**/.ruff_cache/
+**/.coverage*
+**/htmlcov/
+**/build/
+**/dist/
+**/*.egg-info/
+**/.ipynb_checkpoints
+**/.python-version
+pip-wheel-metadata/
+
+# --- Logs & caches ---
+logs/
+*.log
+.cache/
