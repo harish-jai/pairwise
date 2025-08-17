@@ -23,7 +23,7 @@ origins = parse(raw)
 origin_regex = os.getenv("_ALLOWED_ORIGIN_REGEX") or os.getenv("ALLOWED_ORIGIN_REGEX")
 
 import logging
-logging.getLogger("uvicorn.error").info(f"[CORS] allow_origins={origins} allow_origin_regex={origin_regex}")
+# logging.getLogger("uvicorn.error").info(f"[CORS] allow_origins={origins} allow_origin_regex={origin_regex}")
 
 app.add_middleware(
     CORSMiddleware,
