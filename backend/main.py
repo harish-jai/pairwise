@@ -94,7 +94,6 @@ def build_model(major, extras, caps):
     # Objective terms
     major_sum = sum(major[i][j] * x[i, j] for i in I for j in J)
 
-    # CP-SAT wants integer linear expressions. Scale extras to int.
     extras_scaled = [[int(round(1000 * extras[i][j])) for j in J] for i in I]
     extras_sum = sum(extras_scaled[i][j] * x[i, j] for i in I for j in J)
 

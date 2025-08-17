@@ -3,6 +3,7 @@ import { Container, Typography } from "@mui/material";
 import ClientHome from "./components/ClientHome";
 
 export default function Home() {
+  console.log("backendUrl =", process.env.NEXT_PUBLIC_BACKEND_URL);
   return (
     <Container maxWidth="md" sx={{ py: 6 }}>
       <Typography variant="h4" gutterBottom>Mentor–Mentee Matcher</Typography>
