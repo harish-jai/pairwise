@@ -1,0 +1,4 @@
+mentors,mentees,trials,p50_latency_s,p95_latency_s,same_major_avg_pct,est_cost_per_run_usd_at_p95
+25,50,5,0.553,7.103,80.0,0.000189
+50,100,5,2.889,5.013,82.6,0.000133
+100,200,5,14.928,19.174,85.9,0.000509
